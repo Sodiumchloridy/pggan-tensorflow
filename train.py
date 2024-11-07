@@ -11,6 +11,16 @@ import os
 from pgan import PGAN, WeightedSum
 from tensorflow.keras import backend
 
+# DEFINE FILEPATH AND PARAMETERS
+# can use celeb A mask dataset on https://github.com/switchablenorms/CelebAMask-HQ 
+DATA_ROOT = os.getenv('DATA_ROOT', './CelebAMask-HQ')
+NOISE_DIM = 512
+# Set the number of batches, epochs and steps for trainining.
+# Look 800k images(16x50x1000) per each lavel
+BATCH_SIZE = [16, 16, 16, 16, 16, 16, 4]
+EPOCHS = 50
+STEPS_PER_EPOCH = 1000
+
 # Create a Keras callback that periodically saves generated images and updates alpha in WeightedSum layers
 class GANMonitor(keras.callbacks.Callback):
   def __init__(self, num_img=16, latent_dim=512, prefix=''):
@@ -65,19 +75,6 @@ class GANMonitor(keras.callbacks.Callback):
     for layer in self.model.discriminator.layers:
       if isinstance(layer, WeightedSum):
         backend.set_value(layer.alpha, alpha)
-
-
-# DEFINE FILEPATH AND PARAMETERS
-# can use celeb A mask dataset on https://github.com/switchablenorms/CelebAMask-HQ 
-DATA_ROOT = './CelebAMask-HQ' 
-NOISE_DIM = 512
-# Set the number of batches, epochs and steps for trainining.
-# Look 800k images(16x50x1000) per each lavel
-BATCH_SIZE = [16, 16, 16, 16, 16, 16, 4]
-EPOCHS = 50
-STEPS_PER_EPOCH = 1000
-
-
 
 
 
