@@ -50,6 +50,14 @@ class MinibatchStdev(Layer):
         input_shape[-1] += 1
         return tuple(input_shape)
 
+class CastLayer(Layer):
+    def __init__(self, dtype=tf.float32, **kwargs):
+        super(CastLayer, self).__init__(**kwargs)
+        self.dtype = dtype
+
+    def call(self, inputs):
+        return tf.cast(inputs, self.dtype)
+
 # Perform Weighted Sum
 # Define alpha as backend.variable to update during training
 class WeightedSum(Add):
@@ -74,7 +82,7 @@ class WeightScaling(Layer):
         self.wscale = gain*tf.math.rsqrt(fan_in)
       
     def call(self, inputs, **kwargs):
-        inputs = tf.cast(inputs, tf.float32)
+        inputs = CastLayer()(inputs)
         return inputs * self.wscale
     
     def compute_output_shape(self, input_shape):
@@ -149,7 +157,7 @@ class PGAN(Model):
 
     def init_discriminator(self):
         img_input = layers.Input(shape = (4,4,3))
-        img_input = tf.cast(img_input, tf.float32)
+        img_input = CastLayer()(img_input)
         
         # fromRGB
         x = WeightScalingConv(img_input, filters=FILTERS[0], kernel_size=(1,1), gain=np.sqrt(2), activate='LeakyReLU')
@@ -176,7 +184,7 @@ class PGAN(Model):
         # 1. Double the input resolution. 
         input_shape = (input_shape[1]*2, input_shape[2]*2, input_shape[3])
         img_input = layers.Input(shape = input_shape)
-        img_input = tf.cast(img_input, tf.float32)
+        img_input = CastLayer()(img_input)
 
         # 2. Add pooling layer 
         #    Reuse the existing “formRGB” block defined as “x1".
